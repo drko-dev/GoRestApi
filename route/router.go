@@ -58,10 +58,10 @@ var routes = Routes{
 		"/user/{id}",
 		controller.GetUser,
 	},
-	Route{
+	/* 	Route{
 		"UserDelete",
 		"DELETE",
 		"/user/{id}",
 		controller.UserDelete,
-	},
+	}, */
 }

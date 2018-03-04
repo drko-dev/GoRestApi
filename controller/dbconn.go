@@ -2,17 +2,18 @@ package controller
 
 import (
 	"database/sql"
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"rest-api/models"
 	// mysql import
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
 )
 
 type jsonErr struct {
+	Code int    `json:"code"`
+	Text string `json:"text"`
+}
+
+type jsonSuccess struct {
 	Code int    `json:"code"`
 	Text string `json:"text"`
 }
@@ -25,113 +26,6 @@ func dbConn() (db *sql.DB) {
 	}
 
 	return db
-}
-
-// Index pagina principal
-func Index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Welcome!\n")
-}
-
-// GetUsers listar usuarios
-func GetUsers(w http.ResponseWriter, r *http.Request) {
-
-	db := dbConn()
-	var scanField models.Users
-	result := []models.Users{}
-
-	rows, err := db.Query("SELECT id, username, email FROM user")
-	if err != nil {
-		panic(err.Error())
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-
-		err = rows.Scan(&scanField.ID, &scanField.Username, &scanField.Email)
-		if err != nil {
-			panic(err.Error())
-		}
-
-		result = append(result, scanField)
-	}
-
-	defer db.Close()
-
-	if len(result) == 0 {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusNotFound)
-		if err := json.NewEncoder(w).Encode(jsonErr{Code: http.StatusNotFound, Text: "Not Found"}); err != nil {
-			panic(err)
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(result); err != nil {
-		panic(err)
-	}
-}
-
-// GetUser Listar usuario unico
-func GetUser(w http.ResponseWriter, r *http.Request) {
-
-	db := dbConn()
-	var scanField models.Users
-	result := []models.Users{}
-	vars := mux.Vars(r)
-
-	rows, err := db.Query("SELECT id, username, email FROM user WHERE id = ?", vars["id"])
-	if err != nil && err != sql.ErrNoRows {
-		log.Panic(err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		err = rows.Scan(&scanField.ID, &scanField.Username, &scanField.Email)
-		if err != nil && err != sql.ErrNoRows {
-			log.Panic(err)
-		}
-		result = append(result, scanField)
-	}
-	defer db.Close()
-
-	if len(result) == 0 {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusNotFound)
-		if err := json.NewEncoder(w).Encode(jsonErr{Code: http.StatusNotFound, Text: "Not Found"}); err != nil {
-			panic(err)
-		}
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(result); err != nil {
-		panic(err)
-	}
-}
-
-// UserDelete Function Delete destroys a row based on ID
-func UserDelete(w http.ResponseWriter, r *http.Request) {
-
-	db := dbConn()
-	vars := mux.Vars(r)
-	// Prepare the SQL Delete
-	delForm, err := db.Prepare("DELETE FROM names WHERE id = ?")
-	if err != nil {
-		panic(err.Error())
-	}
-
-	// Execute the Delete SQL
-	delForm.Exec(vars["id"])
-
-	// Show on console the action
-	log.Println("DELETE")
-
-	defer db.Close()
-
-	// Redirect a HOME
-	http.Redirect(w, r, "/", 301)
 }
 
 // UserUpdate It's the same as Insert and New
