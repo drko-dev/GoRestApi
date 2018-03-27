@@ -53,6 +53,12 @@ var routes = Routes{
 		controller.GetUsers,
 	},
 	Route{
+		"GetUsers",
+		"POST",
+		"/users",
+		controller.GetUsers,
+	},
+	Route{
 		"GetUser",
 		"GET",
 		"/user/{id}",

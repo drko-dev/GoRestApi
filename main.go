@@ -18,7 +18,7 @@ func main() {
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
-	log.Println("Escuchando...")
+	log.Println("Escuchando puerto 8080 ...")
 	log.Fatal(server.ListenAndServe())
 
 }
