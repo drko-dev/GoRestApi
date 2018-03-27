@@ -19,6 +19,6 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 	}
 	log.Println("Escuchando puerto 1700 ...")
-	log.Fatal(server.ListenAndServe())
+	log.Fatal(server.ListenAndServeTLS("/etc/letsencrypt/live/visio.ctssysltd.com/fullchain.pem", " /etc/letsencrypt/live/visio.ctssysltd.com/privkey.pem"))
 
 }
