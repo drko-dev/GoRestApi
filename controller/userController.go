@@ -1,19 +1,65 @@
 package controller
 
 import (
+	"context"
 	"encoding/json"
+	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"rest-api/models"
 
+	vision "cloud.google.com/go/vision/apiv1"
 	"github.com/gorilla/mux"
+	// Imports the Google Cloud Vision API client package.
 )
 
 // Index pagina principal
 func Index(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(jsonSuccess{Code: http.StatusOK, Text: "Success"})
+	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	// w.WriteHeader(http.StatusOK)
+	// json.NewEncoder(w).Encode(jsonSuccess{Code: http.StatusOK, Text: "Success"})
+	// path := r.URL.Path[1:]
+	// log.Println(path)
+	/*
+		data, err := ioutil.ReadFile(string(path))
+
+		if err == nil {
+			w.Write(data)
+		} else {
+			w.WriteHeader(404)
+			w.Write([]byte("404 Something went wrong - " + http.StatusText(404)))
+		} */
+
+	ctx := context.Background()
+
+	// Creates a client.
+	client, err := vision.NewImageAnnotatorClient(ctx)
+	if err != nil {
+		log.Fatalf("Failed to create client: %v", err)
+	}
+
+	// Sets the name of the image file to annotate.
+	filename := "public/images/cat.jpg"
+
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Fatalf("Failed to read file: %v", err)
+	}
+	defer file.Close()
+	image, err := vision.NewImageFromReader(file)
+	if err != nil {
+		log.Fatalf("FParseFilesilindexd to create image: %v", err)
+	}
+
+	labels, err := client.DetectLabels(ctx, image, nil, 10)
+	if err != nil {
+		log.Fatalf("Failed to detect labels: %v", err)
+	}
+
+	tpl := template.Must(template.New("index.html").ParseGlob("public/templates/*.html"))
+
+	tpl.Execute(w, labels)
 }
 
 // GetUsers listar usuarios

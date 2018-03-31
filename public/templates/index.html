@@ -1,0 +1,14 @@
+{{template "header"}}
+<body>
+    <div class="container">
+        <div class="notification">
+            <img src="/images/cat.jpg" heigth="200" width="300">
+            <ul>
+                {{range .}}
+                    <li>{{.Description}}</li>
+                {{end}}
+            </ul>
+        </div>
+    </div>
+</body>
+{{template "footer"}}

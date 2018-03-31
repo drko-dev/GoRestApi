@@ -11,10 +11,14 @@ import (
 func main() {
 
 	var chain, key, port string
-	if len(os.Args) > 1 {
+	if len(os.Args) > 2 {
 		chain = os.Args[1]
 		key = os.Args[2]
 		port = os.Args[3]
+	} else if len(os.Args) == 2 {
+		chain = ""
+		key = ""
+		port = os.Args[1]
 	} else {
 		chain = "/etc/ssl/certs/fullchain.pem"
 		key = "/etc/ssl/certs/privkey.pem"
@@ -32,5 +36,9 @@ func main() {
 	}
 
 	log.Println("Escuchando puerto " + port + " ...")
-	log.Println(server.ListenAndServeTLS(chain, key))
+	if chain == "" || key == "" {
+		log.Println(server.ListenAndServe())
+	} else {
+		log.Println(server.ListenAndServeTLS(chain, key))
+	}
 }
