@@ -40,7 +40,7 @@ var routes = Routes{
 	Route{
 		"GetUser",
 		"GET",
-		"/user/{id}",
+		"/upload/{id}",
 		controller.GetUser,
 	},
 }

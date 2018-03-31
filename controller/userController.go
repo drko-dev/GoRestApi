@@ -4,10 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"html/template"
+	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"rest-api/models"
+	"strconv"
 
 	vision "cloud.google.com/go/vision/apiv1"
 	"github.com/gorilla/mux"
@@ -21,15 +24,6 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	// json.NewEncoder(w).Encode(jsonSuccess{Code: http.StatusOK, Text: "Success"})
 	// path := r.URL.Path[1:]
 	// log.Println(path)
-	/*
-		data, err := ioutil.ReadFile(string(path))
-
-		if err == nil {
-			w.Write(data)
-		} else {
-			w.WriteHeader(404)
-			w.Write([]byte("404 Something went wrong - " + http.StatusText(404)))
-		} */
 
 	ctx := context.Background()
 
@@ -40,7 +34,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Sets the name of the image file to annotate.
-	filename := "public/images/cat.jpg"
+	filename := "public/images/descarga.jpg"
 
 	file, err := os.Open(filename)
 	if err != nil {
@@ -60,6 +54,50 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	tpl := template.Must(template.New("index.html").ParseGlob("public/templates/*.html"))
 
 	tpl.Execute(w, labels)
+}
+
+// UploadFile sube archicos para analizar
+func UploadFile(w http.ResponseWriter, r *http.Request) {
+
+	var (
+		status int
+		err    error
+	)
+	defer func() {
+		if nil != err {
+			http.Error(w, err.Error(), status)
+		}
+	}()
+	// parse request
+	// const _24K = (1 << 20) * 24
+	if err = r.ParseMultipartForm(32 << 20); nil != err {
+		status = http.StatusInternalServerError
+		return
+	}
+
+	for _, fheaders := range r.MultipartForm.File {
+		for _, hdr := range fheaders {
+			// open uploaded
+			var infile multipart.File
+			if infile, err = hdr.Open(); nil != err {
+				status = http.StatusInternalServerError
+				return
+			}
+			// open destination
+			var outfile *os.File
+			if outfile, err = os.Create("./public/images/" + hdr.Filename); nil != err {
+				status = http.StatusInternalServerError
+				return
+			}
+			// 32K buffer copy
+			var written int64
+			if written, err = io.Copy(outfile, infile); nil != err {
+				status = http.StatusInternalServerError
+				return
+			}
+			w.Write([]byte("uploaded file:" + hdr.Filename + ";length:" + strconv.Itoa(int(written))))
+		}
+	}
 }
 
 // GetUsers listar usuarios
