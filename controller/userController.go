@@ -81,7 +81,7 @@ func AnalyzeFile(w http.ResponseWriter, r *http.Request) {
 		// Creates a client.
 		client, err := vision.NewImageAnnotatorClient(ctx)
 		if err != nil {
-			log.Fatalf("Failed to create client: %v", err)
+			log.Println("Failed to create client: %v", err)
 		}
 
 		// Sets the name of the image file to annotate.
@@ -89,17 +89,17 @@ func AnalyzeFile(w http.ResponseWriter, r *http.Request) {
 
 		file, err := os.Open(filename)
 		if err != nil {
-			log.Fatalf("Failed to read file: %v", err)
+			log.Println("Failed to read file: %v", err)
 		}
 		defer file.Close()
 		image, err := vision.NewImageFromReader(file)
 		if err != nil {
-			log.Fatalf("FParseFilesilindexd to create image: %v", err)
+			log.Println("FParseFilesilindexd to create image: %v", err)
 		}
 
 		labels, err := client.DetectLabels(ctx, image, nil, 10)
 		if err != nil {
-			log.Fatalf("Failed to detect labels: %v", err)
+			log.Println("Failed to detect labels: %v", err)
 		}
 
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")

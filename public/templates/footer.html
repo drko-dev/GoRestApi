@@ -21,10 +21,6 @@
             }
         }
 
-        $("#imgInp").change(function () {
-            readURL(this);
-        });
-
         $("#formUpload").on('submit', function (e) {
 
             $("#send").addClass("is-loading")
@@ -37,15 +33,8 @@
                 contentType: false,
                 cache: false,
                 processData: false,
-                success: function (jqXHR) {
-                    if (jqXHR.status == null) {
-                        alert('Please enter a valid image')
-                        $("#send").removeClass("is-loading")
-                        return false
-                    }
-                },
-                error: function (msg) {
-                    alert(msg)
+                success: function () {
+
                     $("#send").removeClass("is-loading")
                 }
             });
@@ -63,6 +52,7 @@
                 },
                 dataType: 'json',
                 success: function (data) {
+                    $('#result').empty()
                     $.each(data, function (index, element) {
                         $('#result').append($('<li>', {text: element.description}));
                     });
@@ -85,6 +75,8 @@
                 $("#run").addClass("disabled")
                 alert('Please select a valid image file (JPEG/JPG/PNG).');
                 return false;
+            } else {
+                readURL(this);
             }
         });
     </script>
