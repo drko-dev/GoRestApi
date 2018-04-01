@@ -6,7 +6,14 @@
                 var reader = new FileReader();
 
                 reader.onload = function (e) {
-                    $('#blah').attr('src', e.target.result);
+
+                    var imagefile = input.file.type;
+                    var match= ["image/jpeg","image/png","image/jpg"];
+                    if(!((imagefile==match[0]) || (imagefile==match[1]) || (imagefile==match[2]))){
+                        $('#blah').attr('src', e.target.result);
+                    } else {
+                        $('#blah').attr('src', 'images/base.png');
+                    }
                 }
 
                 reader.readAsDataURL(input.files[0]);
@@ -15,6 +22,69 @@
 
         $("#imgInp").change(function () {
             readURL(this);
+        });
+
+        $("#formUpload").on('submit', function(e){
+
+            $("#send").addClass("is-loading")
+            
+            e.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: 'upload',
+                data: new FormData(this),
+                contentType: false,
+                cache: false,
+                processData:false,
+                success: function(jqXHR){
+                    if (jqXHR.status == null){
+                        alert('Please enter a valid image')
+                        $("#send").removeClass("is-loading")
+                        return false
+                    }            
+                },
+                error: function(msg){
+                    alert(msg)
+                    $("#send").removeClass("is-loading")     
+                }
+            });
+        });
+
+        $("#run").on('click', function(e){
+            
+            $("#run").addClass("is-loading")
+            
+            $.ajax({
+                type: 'GET',
+                url: '/analyze/'+$("#imgInp").val().replace(/C:\\fakepath\\/i, ''),
+                data: { get_param: 'value' }, 
+                dataType: 'json',
+                success: function(data){
+                   $.each(data, function(index, element) {
+                        $('#result').append($('<li>', {
+                            text: element.description
+                        }));
+                    });
+                    $("#run").removeClass("is-loading")            
+                },
+                error: function(jqXHR, textStatus, errorThrown){
+                    if(jqXHR.status == 404) {
+                        alert(textStatus+": There is nothing to analyze")
+                    }
+                    $("#run").removeClass("is-loading")                                
+                }
+            });
+        });
+
+        $("#imgInp").change(function() {
+            var file = this.files[0];
+            var imagefile = file.type;
+            var match= ["image/jpeg","image/png","image/jpg"];
+            if(!((imagefile==match[0]) || (imagefile==match[1]) || (imagefile==match[2]))){
+                $("#run").addClass("disabled")
+                alert('Please select a valid image file (JPEG/JPG/PNG).');
+                return false;
+            }
         });
     </script>
 </html>

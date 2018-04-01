@@ -43,6 +43,18 @@ var routes = Routes{
 		"/upload/{id}",
 		controller.GetUser,
 	},
+	Route{
+		"Upload",
+		"POST",
+		"/upload",
+		controller.UploadFile,
+	},
+	Route{
+		"AnalyzeFile",
+		"GET",
+		"/analyze/{image}",
+		controller.AnalyzeFile,
+	},
 }
 
 // NewMuxRouter manejador de rutas

@@ -19,52 +19,23 @@ import (
 
 // Index pagina principal
 func Index(w http.ResponseWriter, r *http.Request) {
-	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	// w.WriteHeader(http.StatusOK)
-	// json.NewEncoder(w).Encode(jsonSuccess{Code: http.StatusOK, Text: "Success"})
-	// path := r.URL.Path[1:]
-	// log.Println(path)
-
-	ctx := context.Background()
-
-	// Creates a client.
-	client, err := vision.NewImageAnnotatorClient(ctx)
-	if err != nil {
-		log.Fatalf("Failed to create client: %v", err)
-	}
-
-	// Sets the name of the image file to annotate.
-	filename := "public/images/descarga.jpg"
-
-	file, err := os.Open(filename)
-	if err != nil {
-		log.Fatalf("Failed to read file: %v", err)
-	}
-	defer file.Close()
-	image, err := vision.NewImageFromReader(file)
-	if err != nil {
-		log.Fatalf("FParseFilesilindexd to create image: %v", err)
-	}
-
-	labels, err := client.DetectLabels(ctx, image, nil, 10)
-	if err != nil {
-		log.Fatalf("Failed to detect labels: %v", err)
-	}
 
 	tpl := template.Must(template.New("index.html").ParseGlob("public/templates/*.html"))
+	tpl.Execute(w, nil)
 
-	tpl.Execute(w, labels)
 }
 
 // UploadFile sube archicos para analizar
 func UploadFile(w http.ResponseWriter, r *http.Request) {
 
 	var (
-		status int
-		err    error
+		status  int
+		err     error
+		outfile *os.File
 	)
+
 	defer func() {
-		if nil != err {
+		if err := outfile.Close(); err != nil {
 			http.Error(w, err.Error(), status)
 		}
 	}()
@@ -84,7 +55,7 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			// open destination
-			var outfile *os.File
+			// var outfile *os.File
 			if outfile, err = os.Create("./public/images/" + hdr.Filename); nil != err {
 				status = http.StatusInternalServerError
 				return
@@ -96,6 +67,45 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			w.Write([]byte("uploaded file:" + hdr.Filename + ";length:" + strconv.Itoa(int(written))))
+		}
+	}
+}
+
+// AnalyzeFile analizar archivo
+func AnalyzeFile(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	if r.Method == "GET" {
+		log.Println(vars["image"])
+		ctx := context.Background()
+
+		// Creates a client.
+		client, err := vision.NewImageAnnotatorClient(ctx)
+		if err != nil {
+			log.Fatalf("Failed to create client: %v", err)
+		}
+
+		// Sets the name of the image file to annotate.
+		filename := "public/images/" + vars["image"]
+
+		file, err := os.Open(filename)
+		if err != nil {
+			log.Fatalf("Failed to read file: %v", err)
+		}
+		defer file.Close()
+		image, err := vision.NewImageFromReader(file)
+		if err != nil {
+			log.Fatalf("FParseFilesilindexd to create image: %v", err)
+		}
+
+		labels, err := client.DetectLabels(ctx, image, nil, 10)
+		if err != nil {
+			log.Fatalf("Failed to detect labels: %v", err)
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(labels); err != nil {
+			log.Panic(err)
 		}
 	}
 }
