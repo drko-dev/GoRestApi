@@ -85,7 +85,7 @@ func AnalyzeFile(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Sets the name of the image file to annotate.
-		filename := "public/images/" + vars["image"]
+		filename := "./public/images/" + vars["image"]
 
 		file, err := os.Open(filename)
 		if err != nil {
