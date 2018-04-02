@@ -20,7 +20,7 @@ import (
 // Index pagina principal
 func Index(w http.ResponseWriter, r *http.Request) {
 
-	tpl := template.Must(template.New("index.html").ParseGlob("public/templates/*.html"))
+	tpl := template.Must(template.New("index.html").ParseGlob("./public/templates/*.html"))
 	tpl.Execute(w, nil)
 
 }
