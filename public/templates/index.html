@@ -1,60 +1,61 @@
 {{template "header"}}
+
 <body>
     <div class="container">
         <nav class="navbar is-light" role="navigation" aria-label="main navigation">
             <div class="navbar-brand">
                 <h1 class="title is-5 has-text-grey" style="line-height: 2;">&nbsp; &nbsp; &nbsp; &nbsp; CTS SYS ltd. (visio beta)</h1>
-            </a>
-        </div>
-    </nav>
-    <div class="notification">
-        <div class="tile is-ancestor">
-            <div class="tile is-4 is-vertical is-parent">
-                <div class="tile is-child box">
-                    <p class="title">Preview</p>
-                    <div class="card">
-                        <div class="card-image">
-                            <figure class="image is-4by3">
-                                <img id="blah" src="images/base.png" alt="your image"/>
-                            </figure>
-                        </div>
-                        <div class="card-content">
-                            <div class="file">
-                                <label class="file-label">
-                                    <form id="formUpload" action="/upload" method="post" enctype="multipart/form-data">
-                                        <input class="file-input" type="file" name="resume" id="imgInp">
-                                        <span class="file-cta">
-                                            <span class="file-icon">
-                                                <i class="fas fa-upload"></i>
+                </a>
+            </div>
+        </nav>
+        <div class="notification">
+            <div class="tile is-ancestor">
+                <div class="tile is-4 is-vertical is-parent">
+                    <div class="tile is-child box">
+                        <p class="title">Preview</p>
+                        <div class="card">
+                            <div class="card-image">
+                                <figure class="image is-4by3">
+                                    <img id="blah" src="images/base.png" alt="your image" />
+                                </figure>
+                            </div>
+                            <div class="card-content">
+                                <div class="file">
+                                    <label class="file-label">
+                                        <form id="formUpload" action="/upload" method="post" enctype="multipart/form-data">
+                                            <input class="file-input" type="file" name="uploadfile" id="imgInp">
+                                            <span class="file-cta">
+                                                <span class="file-icon">
+                                                    <i class="fas fa-upload"></i>
+                                                </span>
+                                                <span class="file-label">
+                                                    Choose a file…
+                                                </span>
                                             </span>
-                                            <span class="file-label">
-                                                Choose a file…
-                                            </span>
-                                        </span>
-                                        <button id="send" type="submit" class="button is-success">Send</button>
-                                    </form>
-                                </label>
+                                            <button id="send" type="submit" class="button is-success is-fullwidth" style="margin-top: 15px;">Send</button>
+                                        </form>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    <div class="tile is-child box">
+                        <p class="title">Test me</p>
+                        <p>
+                            <button id="run" class="button is-link">Analyze</button>
+                        </p>
+                    </div>
                 </div>
-                <div class="tile is-child box">
-                    <p class="title">Test me</p>
-                    <p>
-                        <button id="run" class="button is-link">Analyze</button>
-                    </p>
-                </div>
-            </div>
-            <div class="tile is-parent">
-                <div class="tile is-child box">
-                    <p class="title">Result</p>
-                    <p>
-                        <ul id="result"></ul>
-                    </p>
+                <div class="tile is-parent">
+                    <div class="tile is-child box">
+                        <p class="title">Result</p>
+                        <p>
+                            <ul id="result"></ul>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 </body>
 {{template "footer"}}

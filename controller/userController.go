@@ -2,15 +2,17 @@ package controller
 
 import (
 	"context"
+	"crypto/md5"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io"
 	"log"
-	"mime/multipart"
 	"net/http"
 	"os"
 	"rest-api/models"
 	"strconv"
+	"time"
 
 	vision "cloud.google.com/go/vision/apiv1"
 	"github.com/gorilla/mux"
@@ -28,47 +30,33 @@ func Index(w http.ResponseWriter, r *http.Request) {
 // UploadFile sube archicos para analizar
 func UploadFile(w http.ResponseWriter, r *http.Request) {
 
-	var (
-		status  int
-		err     error
-		outfile *os.File
-	)
+	fmt.Println("method:", r.Method)
+	if r.Method == "GET" {
+		crutime := time.Now().Unix()
+		h := md5.New()
+		io.WriteString(h, strconv.FormatInt(crutime, 10))
+		token := fmt.Sprintf("%x", h.Sum(nil))
 
-	defer func() {
-		if err := outfile.Close(); err != nil {
-			http.Error(w, err.Error(), status)
+		t, _ := template.ParseFiles("upload.gtpl")
+		t.Execute(w, token)
+	} else {
+		r.ParseMultipartForm(32 << 20)
+		file, handler, err := r.FormFile("uploadfile")
+		if err != nil {
+			fmt.Println(err)
+			return
 		}
-	}()
-	// parse request
-	// const _24K = (1 << 20) * 24
-	if err = r.ParseMultipartForm(32 << 20); nil != err {
-		status = http.StatusInternalServerError
-		return
+		defer file.Close()
+		fmt.Fprintf(w, "%v", handler.Header)
+		f, err := os.OpenFile("./public/images/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer f.Close()
+		io.Copy(f, file)
 	}
 
-	for _, fheaders := range r.MultipartForm.File {
-		for _, hdr := range fheaders {
-			// open uploaded
-			var infile multipart.File
-			if infile, err = hdr.Open(); nil != err {
-				status = http.StatusInternalServerError
-				return
-			}
-			// open destination
-			// var outfile *os.File
-			if outfile, err = os.Create("./public/images/" + hdr.Filename); nil != err {
-				status = http.StatusInternalServerError
-				return
-			}
-			// 32K buffer copy
-			var written int64
-			if written, err = io.Copy(outfile, infile); nil != err {
-				status = http.StatusInternalServerError
-				return
-			}
-			w.Write([]byte("uploaded file:" + hdr.Filename + ";length:" + strconv.Itoa(int(written))))
-		}
-	}
 }
 
 // AnalyzeFile analizar archivo
@@ -81,7 +69,7 @@ func AnalyzeFile(w http.ResponseWriter, r *http.Request) {
 		// Creates a client.
 		client, err := vision.NewImageAnnotatorClient(ctx)
 		if err != nil {
-			log.Println("Failed to create client: %v", err)
+			log.Printf("Failed to create client: %v", err)
 		}
 
 		// Sets the name of the image file to annotate.
@@ -89,17 +77,17 @@ func AnalyzeFile(w http.ResponseWriter, r *http.Request) {
 
 		file, err := os.Open(filename)
 		if err != nil {
-			log.Println("Failed to read file: %v", err)
+			log.Printf("Failed to read file: %v", err)
 		}
 		defer file.Close()
 		image, err := vision.NewImageFromReader(file)
 		if err != nil {
-			log.Println("FParseFilesilindexd to create image: %v", err)
+			log.Printf("FParseFilesilindexd to create image: %v", err)
 		}
 
 		labels, err := client.DetectLabels(ctx, image, nil, 10)
 		if err != nil {
-			log.Println("Failed to detect labels: %v", err)
+			log.Printf("Failed to detect labels: %v", err)
 		}
 
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
